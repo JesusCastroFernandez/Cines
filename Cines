@@ -1,0 +1,82 @@
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.DayOfWeek;
+import java.time.format.DateTimeFormatter;
+import java.util.Scanner;
+
+public class CinesTrassierra {
+
+    public static void main(String[] args) {
+
+        // Definimos los precios base
+        double precioBase = 4.50;
+        double precioSesion22 = 5.50;
+
+        // Pedimos al usuario que introduzca la fecha de la sesión
+        LocalDate fechaSesion;
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.print("Introduce la fecha de la sesión (dd/mm/yyyy): ");
+            String fechaString = scanner.nextLine();
+            try {
+                fechaSesion = LocalDate.parse(fechaString, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                if (fechaSesion.isBefore(LocalDate.now().plusWeeks(1))) {
+                    System.out.println("La compra debe realizarse con al menos una semana de antelación.");
+                    continue;
+                }
+                break;
+            } catch (Exception e) {
+                System.out.println("Fecha incorrecta. Introduce una fecha válida.");
+            }
+        }
+
+        // Determinamos si es día del espectador
+        boolean diaEspectador = (fechaSesion.getDayOfWeek() == DayOfWeek.MONDAY || fechaSesion.getDayOfWeek() == DayOfWeek.THURSDAY);
+
+        // Pedimos al usuario que introduzca la hora de la sesión
+        int horaSesion;
+        while (true) {
+            System.out.print("Introduce la hora de la sesión (0-23): ");
+            try {
+                horaSesion = Integer.parseInt(scanner.nextLine());
+                if (horaSesion < 0 || horaSesion > 23) {
+                    throw new Exception();
+                }
+                break;
+            } catch (Exception e) {
+                System.out.println("Hora incorrecta. Introduce una hora válida.");
+            }
+        }
+
+        int minutosSesion;
+        while (true) {
+            System.out.print("Introduce los minutos de la sesión (0-59): ");
+            try {
+                minutosSesion = Integer.parseInt(scanner.nextLine());
+                if (minutosSesion < 0 || minutosSesion > 59) {
+                    throw new Exception();
+                }
+                break;
+            } catch (Exception e) {
+                System.out.println("Minutos incorrectos. Introduce unos minutos válidos.");
+            }
+        }
+
+        // Creamos los objetos LocalTime de referencia
+        LocalTime horaPrimeraSesion = LocalTime.of(17, 0);
+        LocalTime horaSesionUsuario = LocalTime.of(horaSesion, minutosSesion);
+
+        // Calculamos la siguiente sesión disponible
+        LocalTime horaSiguienteSesion;
+        if (horaSesionUsuario.isBefore(horaPrimeraSesion)) {
+            long minutosHastaPrimeraSesion = horaPrimeraSesion.toSecondOfDay() / 60 - horaSesionUsuario.toSecondOfDay() / 60;
+            System.out.printf("La sesión comienza en %d minutos.%n", minutosHastaPrimeraSesion);
+            if (diaEspectador) {
+                System.out.printf("Precio de la entrada: %.2f euros.%n", precioBase / 2);
+            } else {
+                System.out.printf("Precio de la entrada: %.2f euros.%n", precioBase);
+            }
+            return;
+        } else if (horaSesionUsuario.isAfter(LocalTime.of(22, 0))) {
+            System.out.println("Ya no hay más sesiones disponibles")}
